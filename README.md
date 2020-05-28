@@ -15,8 +15,9 @@ The following libs are included in this repository:
 Recommended Project Structure
 ===========================================================
 We recommend to keep Datasets available in central folders, produced project data in other folder and code in a Github project.
-We can see a scheme below
+We can see a scheme below:
 
+```
 DRIVER_BASE
     |
     ------ Dataset1 ----- Dataset1_20200501.csv
@@ -35,4 +36,4 @@ REPORTS_BASE
     ------- python_utils --- cloud_data_utils.py
     |                        eda_utils.py
     ------- Project1 ------- analysis.py
- 
+``` 

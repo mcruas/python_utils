@@ -57,6 +57,10 @@ def acumulada(coluna):
 df['class'].value_counts().plot('barh') #horizontal bar plot
 
 
+# Salva pandas
+fig = missing.plot(figsize=(16,12), kind = "barh").get_figure()
+
+
 ########## SEABORN 
 
 # _ Seaborn

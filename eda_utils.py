@@ -1,5 +1,79 @@
 #############################################################################
 ###################### ANALISE EXPLORATORIA #################################
+import matplotlib.pyplot as plt
+import seaborn as sns
+import re
+import os
+import pandas as pd
+'''
+This function produces plots for all combinations of of a given feature 
+'''
+def Plots_agregados(
+      df, # DataFrame
+      x, # Name of variable on x-axis
+      var,  # variable that forms y-axis
+      var_level1 = None, # Variable to separate plots
+      param_to_show = 8, # either a maximum int number or a proportion (0,1), depending on the plot_type value
+      min_total = 1, # number of minimum size to show a plot
+      figsize = (12,8),
+      cut_by = 'number',   #  Choose to cut variables by'number' or 'proportion'
+      grouper_x = None, # Use when changing frequency of data
+      plot_type = 'count', # Choose between ['count', 'proportion'][1],
+      plot_title = "Fonte: {}", # Plot title. Must insert {} on the place of level1
+      file_name = 'Data_Concorrente_Fonte_{}',
+      fig_extension = 'png',
+      show_total_on_title = True,
+      ## Iterates over categories of a data frame and plots occurences over time
+      base = '',
+      path = '',
+      format_file_name = False,
+      subset_level1 = None # In case only wants a subset of values of level1
+):
+      if (grouper_x is None) : grouper_x = x
+      vector_level1 = df[var_level1].unique() if subset_level1 is None else subset_level1
+      for level1 in vector_level1: # level1 = vector_level1[0]
+            index_level1 = (df[var_level1] == level1)
+            n_level = sum(index_level1)
+            if n_level < min_total:
+                  print(f'{level1}: Less than {min_total} values')
+                  continue;
+            counts = df.loc[index_level1, var].value_counts(normalize = True)
+            # Defines the shown_list
+            if cut_by == 'number':
+                  if not isinstance(param_to_show, int):
+                        print("[ERROR] Invalid value for param_to_show!")
+                        return -1;
+                  shown_list = counts[0:param_to_show].index
+            elif (param_to_show >= 0) & (param_to_show <= 1):
+                  shown_list = counts[counts >= param_to_show].index
+                  if len(shown_list) == 0:
+                        print(f'{level1}: 0 values on list')
+                        continue;
+            else:
+                  print("[ERROR] Invalid value for param_to_show!")
+                  return -1;
+            # df.loc[index_level1, 'Concorrente'].value_counts()[0:10]
+            arg_value_counts = {} if (plot_type == 'count') else {'normalize':True}
+            df_agg = (df[index_level1]
+                  .groupby([grouper_x, var_level1])[var]
+                  .value_counts(*arg_value_counts)
+                  .reset_index(name = plot_type)
+                  .sort_values(x)
+            )
+            df_plot = df_agg[df_agg[var].isin(shown_list)]
+            plt.figure(figsize=figsize)
+            fig = sns.lineplot(data = df_plot, x=x, y=plot_type, hue=var) \
+                        .set_title(plot_title.format(level1) + f' | Total values: {n_level}')
+            folder_path = os.path.join(base, path)
+            if not os.path.isdir(folder_path):
+                  os.mkdir(folder_path)
+            file_name_formated = file_name.format(level1)
+            if format_file_name:
+                  file_name_formated = re.sub(r'\W+', '', file_name_formated)
+            fig.get_figure().savefig(os.path.join(folder_path, file_name_formated + '.' + fig_extension))
+
+
+
 
 # Imprime a tabela de estatísticas
 def Print_classification_report(model, X_test, y_test, prob_threshold = 0.5):
@@ -61,7 +135,7 @@ def count_stats_cat(serie, plot = False):
     else:
         print(serie.value_counts())
 
-    
+
 # Finds proportion of each category in a column which has the target
 def proportion_target_categorical(df, col, name_target = 'Target', plot_with = 'plotly'):
     tmp = df.groupby(col)[name_target].mean().reset_index()
@@ -91,6 +165,12 @@ def concorrentes_subfonte(fonte):
             df.loc[index_subfonte, 'Concorrente'].value_counts()[0:7].plot(kind = "barh", title = f"{subfonte}", figsize=(16,8))
             plt.show();
 
+
+
+###################################################################
+# Tira estatísticas
+##################################################################
+
 def concorrentes_fonte(fonte):
     index_fonte = (df['Fonte'] == fonte)
     df.loc[index_fonte, 'Concorrente'].value_counts()[0:10].plot(kind = "barh", figsize=(16,8))
@@ -106,6 +186,18 @@ def count_stats_cat(serie, plot = False):
         plt.show()
     else:
         print(serie.value_counts())
+
+
+def Value_Counts(self, subset = '', dropna = True):
+    cols = self.columns
+    if len(subset) > 0:
+        cols = subset
+    for col in cols:
+        print(f"\n{col}\n================================================")
+        print(self[col].value_counts(dropna = dropna))
+
+
+setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
 
 
 # def foo(self): # Have to add self since this will become a method

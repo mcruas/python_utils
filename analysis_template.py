@@ -1,11 +1,16 @@
-##################################################
-# Resume 
-
-
-
-##################################################
-
+'''
 # Package imports
+''' #########################################
+
+# Select Googlecolab or PC
+root_data = "G:/"
+
+# Uncomment when using Google Colab
+# root_data = "/gdrive/"
+
+'''
+# Package imports
+''' #########################################
 import os
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -18,14 +23,10 @@ user_root = os.getenv('userprofile')
 root_github = os.chdir(os.path.join(user_root,'Github'))
 
 # Local libraries imports
-# Necessary to clone python_utils: git clone https://github.com/mcruas/python_utils 
+# Necessary to clone python_utils: !git clone https://github.com/mcruas/python_utils 
 import python_utils.eda_utils as eda
 import python_utils.cloud_data_utils as cd
 
-
-# Select Googlecolab or PC
-root_data = "/gdrive/"
-# root_data = "G:/"
 
 # External files base path 
 DRIVE_BASE_PATH = os.path.join(root_data,"Shared drives/darwin/darwin-mestro/")

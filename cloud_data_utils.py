@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 ############################ PDCSV #####################################
 
 # Cria um método para escrita em arquivo .pdcsv
-def to_pdcsv(self, base, path = '', index=False, args={}):
+def to_pdcsv(self, base, path = '', index=False, auto_name = True, args={}):
     full_path = os.path.join(base, path)
     if index:
         # rename index

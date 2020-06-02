@@ -1,6 +1,6 @@
 python_utils
 =========================================================
-Repository for functions that are useful in my daily analisys in Data Science
+Repository for functions that are useful in my daily analysis in Data Science
 
 
 Templates and useful functions for a Data Science Workflow
@@ -14,7 +14,7 @@ The following libs are included in this repository:
 
 Recommended Project Structure
 ===========================================================
-We recommend to keep Datasets available in central folders, produced project data in other folder and code in a Github project.
+We recommend to keep Datasets available in central folders, produced project data in other folder and codes in Github projects.
 We can see a scheme below:
 
 ```

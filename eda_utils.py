@@ -136,6 +136,9 @@ def count_stats_cat(serie, plot = False):
         print(serie.value_counts())
 
 
+
+
+
 # Finds proportion of each category in a column which has the target
 def proportion_target_categorical(df, col, name_target = 'Target', plot_with = 'plotly'):
     tmp = df.groupby(col)[name_target].mean().reset_index()
@@ -198,6 +201,22 @@ def Value_Counts(self, subset = '', dropna = True):
 
 
 setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
+
+
+# Takes a pd.DataFrame table and adds a final column named 'Total'
+# If normalize == True, then divides each number by the total, so it is represented as a proportion
+def add_total(self, normalize = False):
+      total = self.apply(sum,axis = 1); total.columns = ['Total']
+      if normalize:
+            self = pd.concat([self.div(total, axis = 0), total], axis = 1)
+      else:
+            self = pd.concat([self, total], axis = 1)
+      self.rename(columns = {0:'Total'}, inplace = True)
+      return self;
+
+
+setattr(pd.DataFrame, 'add_total', add_total)
+
 
 
 # def foo(self): # Have to add self since this will become a method

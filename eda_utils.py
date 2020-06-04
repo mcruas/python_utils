@@ -217,6 +217,19 @@ def add_total(self, normalize = False):
 
 setattr(pd.DataFrame, 'add_total', add_total)
 
+# an extension of combine_first where we specify the column to merge
+# it is very slow
+def combine_merge(self, df, on = None):
+      if on is None:
+            columns_a = self.columns
+            columns_b = df.columns 
+            on = [i for i in columns_a if i in columns_b]
+      return self.set_index(on) \
+            .combine_first(df.set_index(on))\
+            .reset_index();
+
+setattr(pd.DataFrame, 'combine_merge', combine_merge)
+
 
 
 # def foo(self): # Have to add self since this will become a method

@@ -5,9 +5,11 @@ import seaborn as sns
 import re
 import os
 import pandas as pd
+import numpy as np
 '''
 This function produces plots for all combinations of of a given feature 
 '''
+
 def Plots_agregados(
       df, # DataFrame
       x, # Name of variable on x-axis
@@ -112,6 +114,16 @@ def diffdate(x,y):
     return ((x-y) / np.timedelta64(1, 'D')).astype(float)
 
 
+# Simplifica copiar para o excel
+def ex(self, n = None):
+    if n is None:
+        self.to_clipboard(excel = True);
+    else:
+        self.head(n).to_clipboard(excel = True);
+
+setattr(pd.DataFrame, "ex", ex);
+
+
 def count_stats(serie,log = False):
     n = len(serie)
     n_missing = sum(np.isnan(serie))
@@ -191,16 +203,6 @@ def count_stats_cat(serie, plot = False):
         print(serie.value_counts())
 
 
-def Value_Counts(self, subset = '', dropna = True):
-    cols = self.columns
-    if len(subset) > 0:
-        cols = subset
-    for col in cols:
-        print(f"\n{col}\n================================================")
-        print(self[col].value_counts(dropna = dropna))
-
-
-setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
 
 
 # Takes a pd.DataFrame table and adds a final column named 'Total'
@@ -220,13 +222,26 @@ setattr(pd.DataFrame, 'add_total', add_total)
 # an extension of combine_first where we specify the column to merge
 # it is very slow
 def combine_merge(self, df, on = None):
-      if on is None:
-            columns_a = self.columns
-            columns_b = df.columns 
-            on = [i for i in columns_a if i in columns_b]
-      return self.set_index(on) \
-            .combine_first(df.set_index(on))\
-            .reset_index();
+# left = pd.DataFrame
+# >>> left       >>> right
+#    a  b   c       a  c   d 
+# 0  1  4   9    0  1  7  13
+# 1  2  5  10    1  2  8  14
+# 2  3  6  11    2  3  9  15
+# 3  4  7  12    
+
+# >>> left.combine_merge(right,on='a')
+#    a  b  c   d
+# 0  1  4  7  13
+# 1  2  5  8  14
+# 2  3  6  9  15
+# 3  
+    if on is None:
+          columns_a = self.columns
+          columns_b = df.columns 
+          on = [i for i in columns_a if i in columns_b]
+    return self.set_index(on).combine_first(df.set_index(on)).reset_index();
+
 
 setattr(pd.DataFrame, 'combine_merge', combine_merge)
 
@@ -235,3 +250,113 @@ setattr(pd.DataFrame, 'combine_merge', combine_merge)
 # def foo(self): # Have to add self since this will become a method
 #     print('hello world!')
 # setattr(DataFrame, 'to_pdcsv', to_pdcsv)
+
+
+def rmerge(left,right,**kwargs):
+    """
+    Taken from: https://gist.github.com/mlgill/11334821
+    
+    Perform a merge using pandas with optional removal of overlapping
+    column names not associated with the join. 
+    
+    Though I suspect this does not adhere to the spirit of pandas merge 
+    command, I find it useful because re-executing IPython notebook cells 
+    containing a merge command does not result in the replacement of existing
+    columns if the name of the resulting DataFrame is the same as one of the
+    two merged DataFrames, i.e. data = pa.merge(data,new_dataframe). I prefer
+    this command over pandas df.combine_first() method because it has more
+    flexible join options.
+    
+    The column removal is controlled by the 'replace' flag which is 
+    'left' (default) or 'right' to remove overlapping columns in either the 
+    left or right DataFrame. If 'replace' is set to None, the default
+    pandas behavior will be used. All other parameters are the same 
+    as pandas merge command.
+    
+    Examples
+    --------
+    >>> left       >>> right
+       a  b   c       a  c   d 
+    0  1  4   9    0  1  7  13
+    1  2  5  10    1  2  8  14
+    2  3  6  11    2  3  9  15
+    3  4  7  12    
+    
+    >>> rmerge(left,right,on='a')
+       a  b  c   d
+    0  1  4  7  13
+    1  2  5  8  14
+    2  3  6  9  15
+    >>> rmerge(left,right,on='a',how='left')
+       a  b   c   d
+    0  1  4   7  13
+    1  2  5   8  14
+    2  3  6   9  15
+    3  4  7 NaN NaN
+    >>> rmerge(left,right,on='a',how='left',replace='right')
+       a  b   c   d
+    0  1  4   9  13
+    1  2  5  10  14
+    2  3  6  11  15
+    3  4  7  12 NaN
+    
+    >>> rmerge(left,right,on='a',how='left',replace=None)
+       a  b  c_x  c_y   d
+    0  1  4    9    7  13
+    1  2  5   10    8  14
+    2  3  6   11    9  15
+    3  4  7   12  NaN NaN
+    """
+
+    # Function to flatten lists from http://rosettacode.org/wiki/Flatten_a_list#Python
+    def flatten(lst):
+        return sum( ([x] if not isinstance(x, list) else flatten(x) for x in lst), [] )
+    
+    # Set default for removing overlapping columns in "left" to be true
+    myargs = {'replace':'left'}
+    myargs.update(kwargs)
+    
+    # Remove the replace key from the argument dict to be sent to
+    # pandas merge command
+    kwargs = {k:v for k,v in myargs.items() if k is not 'replace'}
+    
+    if myargs['replace'] is not None:
+        # Generate a list of overlapping column names not associated with the join
+        skipcols = set(flatten([v for k, v in myargs.items() if k in ['on','left_on','right_on']]))
+        leftcols = set(left.columns)
+        rightcols = set(right.columns)
+        dropcols = list((leftcols & rightcols).difference(skipcols))
+        
+        # Remove the overlapping column names from the appropriate DataFrame
+        if myargs['replace'].lower() == 'left':
+            left = left.copy().drop(dropcols,axis=1)
+        elif myargs['replace'].lower() == 'right':
+            right = right.copy().drop(dropcols,axis=1)
+        
+    df = pd.merge(left,right,**kwargs)
+    
+    return df
+
+
+
+
+def Value_Counts(self, subset = '', dropna = True):
+    cols = self.columns
+    if len(subset) > 0:
+        cols = subset
+    for col in cols:
+        print(f"\n{col}\n================================================")
+        print(self[col].value_counts(dropna = dropna));
+
+
+setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
+
+
+def perc_miss(self, plot = False):
+    if plot:
+        df.perc_miss().plot(kind = "barh", figsize = (14,11), title = "Non-null values in each column")
+    else:
+        return self.apply(lambda x: sum(x.notna())/len(x));
+
+
+setattr(pd.DataFrame, 'perc_miss', perc_miss)

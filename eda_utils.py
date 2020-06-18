@@ -354,7 +354,7 @@ setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
 
 def perc_miss(self, plot = False):
     if plot:
-        df.perc_miss().plot(kind = "barh", figsize = (14,11), title = "Non-null values in each column")
+        self.perc_miss().plot(kind = "barh", figsize = (14,11), title = "Non-null values in each column")
     else:
         return self.apply(lambda x: sum(x.notna())/len(x));
 

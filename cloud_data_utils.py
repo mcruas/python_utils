@@ -8,11 +8,18 @@ import matplotlib.pyplot as plt
 ############################ PDCSV #####################################
 
 # Cria um método para escrita em arquivo .pdcsv
-def to_pdcsv(self, base, path = '', index=False, auto_name = True, args={}):
+def to_pdcsv(self, base, path = '', index=False, args={}):
     full_path = os.path.join(base, path)
+    filename, file_extension = os.path.splitext(full_path)
+    if file_extension == '': # Caso não seja dada a extensão, coloca um nome de arquivo automatico
+        data_hoje = pd.Timestamp('today').strftime("%Y%m%d_%H%M")
+        auto_name = os.path.basename(os.path.normpath(full_path)) + '_' + data_hoje + '.pdcsv'
+        full_path_file = os.path.join(base, path, auto_name)
+    else: 
+        full_path_file = os.path.join(base, path)
     if index:
         # rename index
-        index_cols = list(df.index.names)
+        index_cols = list(self.index.names)
         for i in range(0, len(index_cols)):
             if pd.isna(index_cols[i]):
                 index_cols[i] = f"index{i}"
@@ -20,13 +27,12 @@ def to_pdcsv(self, base, path = '', index=False, auto_name = True, args={}):
                 pass
         self.index.names = index_cols
         self = self.reset_index()
+        dtypes = self.dtypes.to_frame().transpose().astype(str)
         dtypes[index_cols] = dtypes[index_cols] + ":index"
     else:
-        pass
+        dtypes = self.dtypes.to_frame().transpose().astype(str)
 
-    dtypes = self.dtypes.to_frame().transpose().astype(str)
-
-    return pd.concat([dtypes, self], axis=0).to_csv(full_path, index=False, **args)
+    return pd.concat([dtypes, self], axis=0).to_csv(full_path_file, index=False, **args)
 
 # Atribui como método da classe DataFrame
 setattr(pd.DataFrame, 'to_pdcsv', to_pdcsv)

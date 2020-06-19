@@ -2,12 +2,17 @@
 # Package imports
 ''' #########################################
 
-# Select Googlecolab or PC
-root_data = "G:/"
 
-# Uncomment when using Google Colab
+
+# ! Uncomment when using Google Colab
 # root_data = "/gdrive/"
-
+!git clone https://github.com/mcruas/python_utils 
+user_root = "/gdrive/"
+import sys
+sys.path.append('/content/python_utils')
+import eda_utils as eda
+import cloud_data_utils as cd
+%cd /gdrive
 '''
 # Package imports
 ''' #########################################
@@ -22,6 +27,9 @@ import numpy as np
 user_root = os.getenv('userprofile')
 root_github = os.chdir(os.path.join(user_root,'Github'))
 
+
+# ! Uncomment when using PC
+root_data = "G:/"
 # Local libraries imports
 # Necessary to clone python_utils: !git clone https://github.com/mcruas/python_utils 
 import python_utils.eda_utils as eda
@@ -33,6 +41,8 @@ DRIVE_BASE_PATH = os.path.join(root_data,"Shared drives/darwin/darwin-mestro/")
 DRIVE_BASE_MASTER_PATH = os.path.join(root_data,"Shared drives/darwin/base-concorrencia/Base_Master")
 DRIVE_BASES_AUXILIARES_PATH = os.path.join(root_data,"Shared drives/darwin/base-concorrencia/Bases_Auxiliares")
 DRIVE_BASES_STATISTICS_PATH = os.path.join(root_data,"Shared drives/darwin/base-concorrencia/Estatisticas")
+DRIVE_BASES_INFO_DB = os.path.join(user_root,"My Drive/Pricing Stone Co/00. Bases/02. Infos DB")
+
 
 # Reports folder
 REPORTS_BASE = os.path.join(root_data,"My Drive/")

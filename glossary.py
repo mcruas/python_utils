@@ -69,9 +69,10 @@ set_style("whitegrid")
 # _ Distribuição Acumulada
 kwargs = {'cumulative': True}
 plt.figure(figsize=(10,6))
-ax = sns.distplot(df['coluna'], hist_kws=kwargs, kde_kws=kwargs)
+ax = sns.distplot(df['coluna'], hist_kws=kwargs, kde_kws=kwargs, label = "blau")
 ax.set(xlabel='X', ylabel='Probabilidade acumulada')
-plt.show()
+ax.legend() # cria legenda com as séries de nome dos labels
+plt.show() # necessário após execução de for
 
 
 
@@ -112,7 +113,7 @@ px.line(df_plot, x = 'reference_date', y = 'value', color = 'variable', title = 
 
 
 
-# ===============================================
+# ================================================================
 # ====== Pandas
 pd.set_option('display.max_rows', 200)
 
@@ -148,9 +149,44 @@ df_week = (df_d.groupby(pd.Grouper(key='ReferenceDate', freq='W-MON'))['#']
       .sort_values('ReferenceDate')
     )
 
+
+## Melhor forma de agregação, via pd.NamedAgg ou tuplas. 
+def quantile_01(x):  return np.quantile(x,0.1) # ainda tem bug e lambda dá pau.
+def quantile_09(x):  return np.quantile(x,0.9)
+
+df = (df
+     .groupby(["col2", "col3","col4", "col5"])
+     .agg(
+          TPV_Q01 = pd.NamedAgg('TPV', quantile_01),
+          TPV_medio = ('TPV', 'mean'),
+          TPV_Q09 = pd.NamedAgg('TPV', quantile_09),
+          count = ('Id_Merge', 'count'),
+          )
+     .reset_index()
+)
+
+
+## Cria ocorrencias de value_counts como colunas
+df.groupby('name')['activity'].value_counts(normalize = True).unstack().fillna(0)
+
+
+
 # _ I/O
 pd.read_excel("planilha.xlsx")
 pd.read_csv("file.csv")
+
+# Dates manipulation
+from pandas.tseries.offsets import MonthEnd
+df['Data'] = pd.to_datetime(df['Data'], format="%Y%m") + MonthEnd(1)
+
+
+# ===========================================================================
+# ============= Dictionary ==========================================
+
+# Iterating over values 
+for state, capital in statesAndCapitals.items(): 
+    print(state, ":", capital) 
+
 
 # ===============================================================================================
 # ===============================================================================================
@@ -189,11 +225,4 @@ import pyodbc
 import os
 
 %cd 'drive/My Drive/Gestão do Ciclo de Vida/6. Data Science/Churn - PUC/'
-
-
-
-# ==============================================================================
-# =============================== Banco Funções ================================
-# ==============================================================================
-
 

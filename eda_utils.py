@@ -352,11 +352,28 @@ def Value_Counts(self, subset = '', dropna = True):
 setattr(pd.DataFrame, 'Value_Counts', Value_Counts)
 
 
-def perc_miss(self, plot = False):
+def perc_miss(self, plot = False, figsize = (14,11)):
     if plot:
-        self.perc_miss().plot(kind = "barh", figsize = (14,11), title = "Non-null values in each column")
+        self.perc_miss().plot(kind = "barh", figsize = figsize, title = "Non-null values in each column")
     else:
         return self.apply(lambda x: sum(x.notna())/len(x));
 
 
 setattr(pd.DataFrame, 'perc_miss', perc_miss)
+
+
+
+
+
+
+
+
+###############################################
+##### Special treatment functions #############
+def transform_string(self, size = None):    
+    if size is None:
+        return self.astype(str).str.replace(r'[^0-9]+', '')
+    else:
+        return self.astype(str).str.replace(r'[^0-9]+', '').str.zfill(size)
+
+setattr(pd.Series, 'transform_string', transform_string)

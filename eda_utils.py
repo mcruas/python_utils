@@ -207,13 +207,13 @@ def count_stats_cat(serie, plot = False):
 
 # Takes a pd.DataFrame table and adds a final column named 'Total'
 # If normalize == True, then divides each number by the total, so it is represented as a proportion
-def add_total(self, normalize = False):
-      total = self.apply(sum,axis = 1); total.columns = ['Total']
+def add_total(self, normalize = False, name = 'Total'):
+      total = self.apply(sum,axis = 1); total.columns = [name]
       if normalize:
             self = pd.concat([self.div(total, axis = 0), total], axis = 1)
       else:
             self = pd.concat([self, total], axis = 1)
-      self.rename(columns = {0:'Total'}, inplace = True)
+      self.rename(columns = {0:name}, inplace = True)
       return self;
 
 
@@ -370,10 +370,29 @@ setattr(pd.DataFrame, 'perc_miss', perc_miss)
 
 ###############################################
 ##### Special treatment functions #############
-def transform_string(self, size = None):    
+
+# Transforms a column in string, removing all non-numeric info.
+# Useful for id data such as CNPJ and CPF. 
+# size: if provided, adds 0 on the left to keep every column with standard size
+def transform_string(self, size = None):   
     if size is None:
         return self.astype(str).str.replace(r'[^0-9]+', '')
     else:
         return self.astype(str).str.replace(r'[^0-9]+', '').str.zfill(size)
+     #! ADICIONAR CASO PARA ARREDONDAMENTO DE FLOAT .round(0).astype(int).   
+
 
 setattr(pd.Series, 'transform_string', transform_string)
+
+
+
+def to_date(self, cols):   
+    for col in cols:
+        self[col] = self[col].to_datetime(self[col])
+    return self
+
+setattr(pd.Series, 'to_date', to_date)
+
+
+
+# print(f"Read files: {file_list}\nDimensions: {df_tmp.shape}")

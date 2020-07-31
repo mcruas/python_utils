@@ -22,6 +22,7 @@ import matplotlib.pyplot as plt
 import plotly.express as px
 import seaborn as sns
 import numpy as np
+import importlib
 
 # Move to local libraries base path - $USER/Github
 user_root = os.getenv('userprofile')
@@ -34,7 +35,7 @@ root_data = "G:/"
 # Necessary to clone python_utils: !git clone https://github.com/mcruas/python_utils 
 import python_utils.eda_utils as eda
 import python_utils.cloud_data_utils as cd
-
+# importlib.reload(eda)
 
 # External files base path 
 DRIVE_BASE_PATH = os.path.join(root_data,"Shared drives/darwin/darwin-mestro/")

@@ -64,7 +64,7 @@ fig = missing.plot(figsize=(16,12), kind = "barh").get_figure()
 ########## SEABORN 
 
 # _ Seaborn
-set_style("whitegrid")
+sns.set_style("whitegrid")
 
 # _ Distribuição Acumulada
 kwargs = {'cumulative': True}
@@ -114,10 +114,17 @@ px.line(df_plot, x = 'reference_date', y = 'value', color = 'variable', title = 
 
 
 # ================================================================
-# ====== Pandas
+# ======================= Pandas =================================
+# ================================================================
 pd.set_option('display.max_rows', 200)
 
 pd.set_option('display.max_columns', 200)
+pd.set_option('display.max_columns', None)
+
+
+## tira os caracteres nao ascii dos nomes das colunas do df
+# import re
+df = df.rename(columns = lambda x:re.sub('[^A-Za-z0-9_]+', '', x))
 
 
 df['Tag_incidente'] =    ( 
@@ -170,15 +177,44 @@ df = (df
 df.groupby('name')['activity'].value_counts(normalize = True).unstack().fillna(0)
 
 
+## Reindexa para ter todos os valores 
+datas = pd.date_range(calculo_trx_data_min, calculo_trx_data_max, freq='M')
+cnpjs = df_trx_raw.query("Data in @datas")['CNPJ_CPF'].unique()
+new_index = pd.MultiIndex.from_product([cnpjs,datas], names=['CNPJ_CPF', 'Data'])
+df_trx_reindex = df_trx_raw[['Data', 'CNPJ_CPF', 'TPV']].set_index(['CNPJ_CPF', 'Data']).reindex(new_index, fill_value = 0).reset_index()
+
+
 
 # _ I/O
 pd.read_excel("planilha.xlsx")
 pd.read_csv("file.csv")
 
+######################### DATES ######################
 # Dates manipulation
+# Transforma a data para o último dia do mês
 from pandas.tseries.offsets import MonthEnd
-df['Data'] = pd.to_datetime(df['Data'], format="%Y%m") + MonthEnd(1)
+df['Data'] = pd.to_datetime(df['Data'], format="%Y%m") + MonthEnd(0)
 
+# Seleciona datas dentro de um intervalo
+in_range_df = df[df["date"].isin(pd.date_range("2017-01-15", "2017-01-20"))]
+
+# Cria Range de datas
+pd.date_range('2000-1-1', periods=200, freq='D')
+
+
+# Muda a frequencia
+df_m_menos_rx = (df
+      .groupby(pd.Grouper(key='Data', freq='M')) # freq = W (semana)
+      .count()
+      .reset_index(name = 'count')
+      .sort_values(['Data', 'Concorrente'])
+    )
+
+# Plota a quantidade de ocorrências semanais
+df_inc_trx.groupby(pd.Grouper(key='Data', freq='W')).size().plot() # freq = W (semana)
+
+# Coloca em formato Ano-semana
+df_portal['Data'].dt.strftime('%Y-%V') 
 
 # ===========================================================================
 # ============= Dictionary ==========================================
@@ -187,6 +223,18 @@ df['Data'] = pd.to_datetime(df['Data'], format="%Y%m") + MonthEnd(1)
 for state, capital in statesAndCapitals.items(): 
     print(state, ":", capital) 
 
+
+# ===========================================================================
+# ============= Files ==========================================
+
+
+df_list = []
+for entry in BASE_SAZONALIDADE.iterdir():
+    if (entry.suffix == '.csv'):
+            df1 = pd.read_csv(entry).melt('semana', var_name = "SS5", value_name = "sazonalidade")
+            df1['MacroClassificacao'] = entry.name.split('.')[0]
+            df_list.append(df1)                  
+df_list1 = pd.concat(df_list) 
 
 # ===============================================================================================
 # ===============================================================================================
@@ -225,4 +273,35 @@ import pyodbc
 import os
 
 %cd 'drive/My Drive/Gestão do Ciclo de Vida/6. Data Science/Churn - PUC/'
+
+# Não exibir saída na celula
+%%capture
+
+
+
+# =====================================================================================
+# =============================================== Pandas Profiling =================================
+import pandas as pd
+import pandas_profiling
+
+profile = df.profile_report(title='Pandas Profiling Report')
+profile.to_file(outputfile="Titanic data profiling.html")
+
+
+# =====================================================================================
+# =============================================== Sweetviz =================================
+
+# importing sweetviz
+import sweetviz as sv
+#analyzing the dataset
+advert_report = sv.analyze(df, target_feat='label')
+#display the report
+advert_report.show_html('tmp.html')
+
+# ====================================================================================
+# ==================== Utilidades =================================================
+
+# checa o sistema operacional
+import platform 
+platform.system() # 'Windows' ou 'Linux' 
 

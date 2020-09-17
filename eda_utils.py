@@ -6,6 +6,9 @@ import re
 import os
 import pandas as pd
 import numpy as np
+from sklearn import metrics
+import datetime
+
 '''
 This function produces plots for all combinations of of a given feature 
 '''
@@ -89,8 +92,9 @@ def Classification_report_tradeoff(model, X_test, y_test, range_threshold = [0.2
   range_threshold_lin = np.linspace(range_threshold[0], range_threshold[1])
   vector_precision = np.zeros(len(range_threshold_lin))
   vector_recall = np.zeros(len(range_threshold_lin))
+  scores = model.predict_proba(X_test)[:,1]
   for i, thr in enumerate(range_threshold_lin):
-    y_pred = (model.predict_proba(X_test)[:,1] >= thr) + 0.
+    y_pred = (scores >= thr) + 0.
     vector_precision[i] = metrics.precision_recall_fscore_support(y_test, y_pred)[0][1]
     vector_recall[i] =  metrics.precision_recall_fscore_support(y_test, y_pred)[1][1]
   sns.set()
@@ -98,6 +102,21 @@ def Classification_report_tradeoff(model, X_test, y_test, range_threshold = [0.2
   plt.xlabel("Precision")
   plt.ylabel("Recall")
   plt.title("Tradeoff Precision-Recall Label 1");
+
+def Classification_scores(scores, y_test, range_threshold = [0.2,0.9], label = None):  
+  range_threshold_lin = np.linspace(range_threshold[0], range_threshold[1])
+  vector_precision = np.zeros(len(range_threshold_lin))
+  vector_recall = np.zeros(len(range_threshold_lin))
+  for i, thr in enumerate(range_threshold_lin):
+    y_pred = (scores >= thr) + 0.
+    vector_precision[i] = metrics.precision_recall_fscore_support(y_test, y_pred)[0][1]
+    vector_recall[i] =  metrics.precision_recall_fscore_support(y_test, y_pred)[1][1]
+  sns.set()
+  plt.plot(vector_precision, vector_recall, label = label)    
+  plt.xlabel("Precision")
+  plt.ylabel("Recall")
+  plt.title("Tradeoff Precision-Recall Label 1");
+
 
 
 # Plota o gráfico de features importance
@@ -122,6 +141,7 @@ def ex(self, n = None):
         self.head(n).to_clipboard(excel = True);
 
 setattr(pd.DataFrame, "ex", ex);
+setattr(pd.Series, "ex", ex);
 
 
 def count_stats(serie,log = False):
@@ -394,5 +414,37 @@ def to_date(self, cols):
 setattr(pd.Series, 'to_date', to_date)
 
 
+def acumulada(coluna):
+  coluna.plot(kind='hist',density=True,cumulative=-1,bins=1000,grid=True);
 
+
+def list_intersection(A, B):
+    return list(set(A).intersection(set(B)));
 # print(f"Read files: {file_list}\nDimensions: {df_tmp.shape}")
+
+def list_difference(A,B):
+    return list(set(A).difference(set(B)));
+
+
+def week_to_date(w, year, wday=1, to_string=False):
+  # w:int - is the week of the year
+  # year:int - year
+  # wday:int - an integer number in [1,7]
+  # import datetime
+# d = '2013-W26'
+    # year = 2020
+    # w = 26
+    d = str(year) + '-W' + str(w).zfill(2) + '-' + str(wday)
+    if to_string:
+      return pd.to_datetime(datetime.datetime.strptime(d , '%G-W%V-%u')).strftime(format='%Y-%m-%d')
+    else:
+      return pd.to_datetime(datetime.datetime.strptime(d , '%G-W%V-%u'))
+
+
+
+def add_prefix(s, lista):
+    return [s + x for x in lista]
+
+
+def add_suffix(s, lista):
+    return [x + s for x in lista]

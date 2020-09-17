@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 # Cria um método para escrita em arquivo .pdcsv
 def to_pdcsv(self, base, path = '', index=False, args={}):
-    full_path = os.path.join(base, path)
+    full_path = os.path.join(base, path) if path != '' else base
     filename, file_extension = os.path.splitext(full_path)
     if file_extension == '': # Caso não seja dada a extensão, coloca um nome de arquivo automatico
         data_hoje = pd.Timestamp('today').strftime("%Y%m%d_%H%M")

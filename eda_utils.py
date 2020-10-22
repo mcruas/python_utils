@@ -118,6 +118,39 @@ def Classification_scores(scores, y_test, range_threshold = [0.2,0.9], label = N
   plt.title("Tradeoff Precision-Recall Label 1");
 
 
+def Classification_scores_matheuzao(scores, y_test, range_threshold=[0.2,0.9], label=None):
+      '''
+      Plotta os tradeoff entre recall x precision para o modelo desejado.
+      Recebe: 
+            model = objeto do modelo probabilistico
+            X_test
+            y_test
+            range_threshold = range dos limiares       
+      Retorna:
+            ax (elemento de eixo)
+
+      '''
+      range_threshold_lin = np.linspace(range_threshold[0], range_threshold[1])
+      vector_precision = np.zeros(len(range_threshold_lin))
+      vector_recall = np.zeros(len(range_threshold_lin))
+      for i, thr in enumerate(range_threshold_lin):
+            y_pred = (scores >= thr) + 0.
+            vector_precision[i] = metrics.precision_recall_fscore_support(y_test, y_pred)[0][1]
+            vector_recall[i] =  metrics.precision_recall_fscore_support(y_test, y_pred)[1][1]
+      fig,ax=plt.subplots(figsize=(10,6))
+      ax.plot(vector_precision, vector_recall,marker='o',label=label)
+      ax.set_xlabel("Precision",fontsize=14)
+      ax.set_ylabel("Recall",fontsize=14)
+      ax.set_title("Tradeoff Precision-Recall x Probability Threshold",fontsize=16);
+      ax.tick_params(labelsize=12)
+  
+      for i,xy in enumerate(zip(vector_precision, vector_recall)):
+            if(i%3==0):
+                  ax.annotate('%.2f' % range_threshold_lin[i], xy=xy, textcoords='data')
+      return(ax)
+
+
+
 
 # Plota o gráfico de features importance
 def Plotar_feature_importance(model, X_test):

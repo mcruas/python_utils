@@ -172,6 +172,10 @@ df = (df
      .reset_index()
 )
 
+# tira outliers baseado em contato
+df_loess.clip(0, df_loess.quantile(0.95), axis=1)
+
+
 
 ## Cria ocorrencias de value_counts como colunas
 df.groupby('name')['activity'].value_counts(normalize = True).unstack().fillna(0)
@@ -201,6 +205,8 @@ in_range_df = df[df["date"].isin(pd.date_range("2017-01-15", "2017-01-20"))]
 # Cria Range de datas
 pd.date_range('2000-1-1', periods=200, freq='D')
 
+# Data de hoje
+pd.to_datetime("today")
 
 # Muda a frequencia
 df_m_menos_rx = (df
@@ -305,3 +311,11 @@ advert_report.show_html('tmp.html')
 import platform 
 platform.system() # 'Windows' ou 'Linux' 
 
+# variáveis de ambiente
+# https://able.bio/rhett/how-to-set-and-get-environment-variables-in-python--274rgt5
+# Set environment variables
+os.environ['API_USER'] = 'username'
+os.environ['API_PASSWORD'] = 'secret'
+# Get environment variables
+USER = os.getenv('API_USER')
+PASSWORD = os.environ.get('API_PASSWORD')

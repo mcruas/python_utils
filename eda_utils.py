@@ -201,6 +201,11 @@ def count_stats_cat(serie, plot = False):
         print(serie.value_counts())
 
 
+def reduce_dict(dict, rkey):
+      output = {}
+      for key in dict.keys():
+            output[key] = dict[key][rkey]
+      return output
 
 
 
@@ -260,13 +265,13 @@ def count_stats_cat(serie, plot = False):
 
 # Takes a pd.DataFrame table and adds a final column named 'Total'
 # If normalize == True, then divides each number by the total, so it is represented as a proportion
-def add_total(self, normalize = False, name = 'Total'):
-      total = self.apply(sum,axis = 1); total.columns = [name]
+def add_total(self, normalize=False, no_total=False, name = 'Total'):
+      total = self.apply(sum,axis=1); total.columns = [name]
       if normalize:
-            self = pd.concat([self.div(total, axis = 0), total], axis = 1)
-      else:
+            self = self.div(total, axis=0)
+      if not no_total:
             self = pd.concat([self, total], axis = 1)
-      self.rename(columns = {0:name}, inplace = True)
+            self.rename(columns = {0:name}, inplace = True)
       return self;
 
 

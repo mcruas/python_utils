@@ -77,3 +77,8 @@ sns.boxplot(
     x='Country',
     y='medal count',
     color='red')
+
+
+
+def save_fig(nome):
+    plt.savefig(REPORTS_PLOTS.joinpath(nome), bbox_inches = 'tight');

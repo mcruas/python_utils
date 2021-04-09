@@ -222,6 +222,15 @@ df_inc_trx.groupby(pd.Grouper(key='Data', freq='W')).size().plot() # freq = W (s
 # Coloca em formato Ano-semana
 df_portal['Data'].dt.strftime('%Y-%V') 
 
+# Teste
+from pandas import util
+df1= util.testing.makeDataFrame().reset_index(drop=True).reset_index()
+df2= util.testing.makeDataFrame().reset_index(drop=True).reset_index()
+# df1['A'] = [i for i in range(30)]
+df1.columns = ['index', 'k', 'f','g','h']
+df1.merge(df2, how='left', on='index')
+
+
 # ===========================================================================
 # ============= Dictionary ==========================================
 

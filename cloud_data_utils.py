@@ -1,4 +1,9 @@
 
+# import sys
+# sys.path.append("C:/Users/marcelo.ruas/Github/python_utils")
+# import cloud_data_utils as cd
+
+
 import pandas as pd
 import os
 import matplotlib.pyplot as plt
@@ -99,3 +104,40 @@ def get_latest_n_df(base, path = '', args = {}, num_last = 1, ext = ".pdcsv"):
 
 # def path_fig(file_name):
 #   fig.savefig(os.path.join(DRIVE_BASES_STATISTICS_PATH, 'Frequencia_missing.jpg'))
+
+# Gets dim_affiliation from bucket at GCS 
+def get_stone_affs(**kwargs):
+    pt = "gs://tech-external-stoneflow/common_data/stonedw-affiliation.csv"
+    return (
+        pd.read_csv(pt, **kwargs)
+            .drop_duplicates(subset=['cpf_cnpj'], ignore_index=True)
+            .drop(columns=['Unnamed: 0', 'affiliationkey', 'clientkey', 'stonecode'])
+    ) 
+
+
+# Gets aws credential
+def get_aws_credential(file=None):
+    import json
+    SECRET_FOLDER = "G:/Meu Drive/Outros/secret/"
+    if file is None:
+        file = SECRET_FOLDER+"aws.json"
+    with open(file) as json_file:
+        aws_credential = json.load(json_file)
+    return aws_credential
+
+
+def athena_to_df(query):
+    from pyathena import connect
+    from pyathena.pandas.util import as_pandas
+    from pyathena.pandas.cursor import PandasCursor
+    aws_credential = get_aws_credential()    
+    access = aws_credential['access']
+    secret = aws_credential['secret']
+    cursor = connect(s3_staging_dir='s3://stone-sandbox-datalake/StoneUsers/athena-query-results/ ',
+                        aws_access_key_id=access,
+                        aws_secret_access_key=secret,
+                        region_name='us-east-1',
+                        work_group = 'StoneUsers').cursor(PandasCursor)
+    df = cursor.execute(query).as_pandas()
+    cursor.close()
+    return df

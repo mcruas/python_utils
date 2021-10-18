@@ -224,6 +224,7 @@ df_portal['Data'].dt.strftime('%Y-%V')
 
 # Teste
 from pandas import util
+# qdo deprecatar import pandas.util.testing
 df1= util.testing.makeDataFrame().reset_index(drop=True).reset_index()
 df2= util.testing.makeDataFrame().reset_index(drop=True).reset_index()
 # df1['A'] = [i for i in range(30)]
@@ -239,6 +240,9 @@ for state, capital in statesAndCapitals.items():
     print(state, ":", capital) 
 
 
+import copy
+d = { ... }
+d2 = copy.deepcopy(d)
 # ===========================================================================
 # ============= Files ==========================================
 
@@ -304,6 +308,15 @@ profile.to_file(outputfile="Titanic data profiling.html")
 
 
 # =====================================================================================
+# =============================================== Jinja ===============================
+from jinja2 import Template
+
+name = input("Enter your name: ")
+
+tm = Template("Hello {{ name }}")
+msg = tm.render(name=name)
+
+# =====================================================================================
 # =============================================== Sweetviz =================================
 
 # importing sweetviz
@@ -328,3 +341,9 @@ os.environ['API_PASSWORD'] = 'secret'
 # Get environment variables
 USER = os.getenv('API_USER')
 PASSWORD = os.environ.get('API_PASSWORD')
+
+import importlib.util
+spec = importlib.util.spec_from_file_location("module.name", "/path/to/file.py")
+foo = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(foo)
+foo.MyClass()
